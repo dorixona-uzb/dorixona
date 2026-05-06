@@ -1,0 +1,180 @@
+{% load static %}<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="description" content="{% block meta_description %}Surxondaryo viloyati onlayn dorixona qidiruv tizimi — eng yaqin dorixonani toping, dori narxlarini taqqoslang{% endblock %}">
+    <meta name="keywords" content="dorixona, dori, Surxondaryo, Termiz, Denov, Boysun, onlayn dorixona, dori narxlari">
+    <title>{% block title %}Surxondaryo Dorixona — Onlayn dorixona tizimi{% endblock %}</title>
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💊</text></svg>">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="{% url 'pharmacies:home' %}">
+            <span class="logo-icon">💊</span>
+            <span class="brand-text">Surxondaryo Dorixona</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'pharmacies:home' %}">
+                        <i class="fas fa-home"></i> Bosh sahifa
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'pharmacies:list' %}">
+                        <i class="fas fa-clinic-medical"></i> Dorixonalar
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'medicines:list' %}">
+                        <i class="fas fa-pills"></i> Dorilar
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-map-marker-alt"></i> Tumanlar
+                    </a>
+                    <ul class="dropdown-menu">
+                        {% for region in all_regions %}
+                            <li>
+                                <a class="dropdown-item" href="{% url 'pharmacies:region_detail' region.slug %}">
+                                    {{ region.name }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            </ul>
+
+            <form class="d-flex me-3 search-form" action="{% url 'search:results' %}" method="get">
+                <div class="input-group">
+                    <input class="form-control" type="search" name="q" placeholder="Dori nomini kiriting..." aria-label="Search">
+                    <button class="btn btn-success" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+
+            <ul class="navbar-nav">
+                {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle"></i> {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'accounts:dashboard' %}"><i class="fas fa-tachometer-alt"></i> Panel</a></li>
+                            {% if user.is_staff %}
+                                <li><a class="dropdown-item" href="/admin/"><i class="fas fa-cog"></i> Admin</a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt"></i> Chiqish</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:login' %}">
+                            <i class="fas fa-sign-in-alt"></i> Kirish
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-success btn-sm ms-2" href="{% url 'accounts:register' %}">
+                            Ro'yxatdan o'tish
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+{% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="footer bg-dark text-white pt-5 pb-3 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <h5 class="fw-bold mb-3">
+                    <span class="logo-icon">💊</span> Surxondaryo Dorixona
+                </h5>
+                <p class="text-white-50">
+                    Surxondaryo viloyatining barcha tumanlari uchun ishlaydigan onlayn dorixona qidiruv tizimi. Eng yaqin dorixonani toping, dori narxlarini taqqoslang.
+                </p>
+                <div class="social-icons mt-3">
+                    <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-lg"></i></a>
+                    <a href="#" class="text-white me-3"><i class="fab fa-telegram fa-lg"></i></a>
+                    <a href="#" class="text-white me-3"><i class="fab fa-instagram fa-lg"></i></a>
+                    <a href="#" class="text-white"><i class="fab fa-youtube fa-lg"></i></a>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-6 mb-4">
+                <h6 class="fw-bold mb-3">Havolalar</h6>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'pharmacies:home' %}" class="text-white-50 text-decoration-none">Bosh sahifa</a></li>
+                    <li><a href="{% url 'pharmacies:list' %}" class="text-white-50 text-decoration-none">Dorixonalar</a></li>
+                    <li><a href="{% url 'medicines:list' %}" class="text-white-50 text-decoration-none">Dorilar</a></li>
+                    <li><a href="{% url 'about' %}" class="text-white-50 text-decoration-none">Biz haqimizda</a></li>
+                    <li><a href="{% url 'contact' %}" class="text-white-50 text-decoration-none">Aloqa</a></li>
+                </ul>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <h6 class="fw-bold mb-3">Asosiy tumanlar</h6>
+                <ul class="list-unstyled">
+                    {% for region in all_regions|slice:":7" %}
+                        <li><a href="{% url 'pharmacies:region_detail' region.slug %}" class="text-white-50 text-decoration-none small">{{ region.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-lg-3 mb-4">
+                <h6 class="fw-bold mb-3">Aloqa</h6>
+                <ul class="list-unstyled text-white-50">
+                    <li><i class="fas fa-map-marker-alt me-2"></i> Termiz shahri, Surxondaryo</li>
+                    <li><i class="fas fa-phone me-2"></i> +998 76 XXX-XX-XX</li>
+                    <li><i class="fas fa-envelope me-2"></i> info@surxondaryo-dorixona.uz</li>
+                    <li><i class="fas fa-clock me-2"></i> 24/7 onlayn xizmat</li>
+                </ul>
+            </div>
+        </div>
+        <hr class="border-secondary">
+        <div class="text-center text-white-50 small">
+            <p class="mb-0">© {% now "Y" %} Surxondaryo Dorixona. Barcha huquqlar himoyalangan.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

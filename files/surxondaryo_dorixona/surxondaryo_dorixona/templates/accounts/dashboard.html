@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Mening panelim{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="fw-bold mb-4">Salom, {{ user.first_name|default:user.username }}!</h1>
+
+    {% if has_pharmacies %}
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="stat-card text-center">
+                    <i class="fas fa-clinic-medical fa-3x text-success mb-2"></i>
+                    <h2 class="fw-bold mb-0">{{ total_pharmacies }}</h2>
+                    <p class="text-muted mb-0">Mening dorixonalarim</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card text-center">
+                    <i class="fas fa-pills fa-3x text-primary mb-2"></i>
+                    <h2 class="fw-bold mb-0">{{ available_stock }}</h2>
+                    <p class="text-muted mb-0">Mavjud dorilar</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card text-center">
+                    <i class="fas fa-boxes fa-3x text-warning mb-2"></i>
+                    <h2 class="fw-bold mb-0">{{ total_stock }}</h2>
+                    <p class="text-muted mb-0">Jami zaxiralar</p>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="fw-bold mb-3">Mening dorixonalarim</h3>
+        <div class="row g-3">
+            {% for pharmacy in pharmacies %}
+                <div class="col-md-6">
+                    <div class="pharmacy-card">
+                        <h5 class="fw-bold">{{ pharmacy.name }}</h5>
+                        <p class="text-muted small">{{ pharmacy.region.name }}, {{ pharmacy.address }}</p>
+                        <p class="small">Telefon: {{ pharmacy.phone }}</p>
+                        <a href="{{ pharmacy.get_absolute_url }}" class="btn btn-sm btn-success">Ko'rish</a>
+                        <a href="/admin/medicines/pharmacystock/?pharmacy={{ pharmacy.id }}" class="btn btn-sm btn-outline-success">Zaxirani boshqarish</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <h5 class="fw-bold">Sizda hali dorixona yo'q</h5>
+            <p>Dorixona qo'shish uchun administrator bilan bog'laning yoki adminlik huquqini oling.</p>
+            {% if user.is_staff %}
+                <a href="/admin/pharmacies/pharmacy/add/" class="btn btn-success">Yangi dorixona qo'shish</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

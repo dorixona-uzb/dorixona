@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ region.name }} dorixonalari — Surxondaryo Dorixona{% endblock %}
+
+{% block content %}
+<section class="region-header bg-success text-white py-4">
+    <div class="container">
+        <h1 class="fw-bold mb-1">
+            <i class="fas fa-map-marker-alt"></i> {{ region.name }}
+        </h1>
+        <p class="lead mb-0">{{ pharmacies.count }} ta dorixona ro'yxatdan o'tgan</p>
+    </div>
+</section>
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-7">
+            {% if pharmacies %}
+                {% for pharmacy in pharmacies %}
+                    <div class="pharmacy-card mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="fw-bold mb-0">
+                                <a href="{{ pharmacy.get_absolute_url }}" class="text-decoration-none text-dark">
+                                    {{ pharmacy.name }}
+                                </a>
+                            </h5>
+                            {% if pharmacy.is_verified %}
+                                <span class="badge bg-success"><i class="fas fa-check"></i> Tasdiqlangan</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-muted small mb-2">
+                            <i class="fas fa-map-marker-alt"></i> {{ pharmacy.address }}
+                        </p>
+                        <p class="mb-2">
+                            <i class="fas fa-phone text-success"></i>
+                            <a href="tel:{{ pharmacy.phone }}" class="text-decoration-none">{{ pharmacy.phone }}</a>
+                        </p>
+                        <div class="d-flex gap-2 flex-wrap mb-2">
+                            {% if pharmacy.is_24_hours %}
+                                <span class="badge bg-warning text-dark"><i class="fas fa-clock"></i> 24/7</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark"><i class="fas fa-clock"></i> {{ pharmacy.working_hours }}</span>
+                            {% endif %}
+                            {% if pharmacy.has_delivery %}
+                                <span class="badge bg-info"><i class="fas fa-truck"></i> Yetkazib berish</span>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="{{ pharmacy.get_absolute_url }}" class="btn btn-sm btn-success">
+                                Batafsil
+                            </a>
+                            <a href="{{ pharmacy.google_maps_url }}" target="_blank" class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-route"></i> Yo'l
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> {{ region.name }}da hozircha dorixonalar ro'yxatdan o'tmagan.
+                </div>
+            {% endif %}
+        </div>
+        <div class="col-lg-5">
+            <div class="sticky-top" style="top: 80px;">
+                <h5 class="fw-bold mb-3">{{ region.name }} xaritasi</h5>
+                <div id="region-map" style="height: 500px; border-radius: 12px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const map = L.map('region-map').setView([{{ region.latitude }}, {{ region.longitude }}], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(map);
+
+    const greenIcon = L.divIcon({
+        className: 'custom-marker',
+        html: '<div class="marker-pin"><i class="fas fa-clinic-medical"></i></div>',
+        iconSize: [30, 42],
+        iconAnchor: [15, 42],
+    });
+
+    const pharmacies = {{ pharmacy_locations|safe }};
+    const markers = [];
+    pharmacies.forEach(function(p) {
+        const marker = L.marker([p.lat, p.lng], { icon: greenIcon }).addTo(map);
+        marker.bindPopup(`
+            <strong>${p.name}</strong><br>
+            <small>${p.address}</small><br>
+            <a href="${p.url}" class="btn btn-sm btn-success mt-1">Batafsil</a>
+        `);
+        markers.push(marker);
+    });
+    if (markers.length > 0) {
+        const group = L.featureGroup(markers);
+        map.fitBounds(group.getBounds().pad(0.1));
+    }
+</script>
+{% endblock %}

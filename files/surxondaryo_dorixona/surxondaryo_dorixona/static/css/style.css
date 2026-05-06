@@ -1,0 +1,369 @@
+/* Surxondaryo Dorixona — Custom Styles */
+
+:root {
+    --primary-color: #16a34a;
+    --primary-dark: #15803d;
+    --secondary-color: #0ea5e9;
+    --accent-color: #f59e0b;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-600: #4b5563;
+    --gray-900: #111827;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1);
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--gray-900);
+    background-color: #fafafa;
+    line-height: 1.6;
+}
+
+/* NAVBAR */
+.navbar { padding: 0.75rem 0; border-bottom: 1px solid #e5e7eb; }
+.navbar-brand { font-size: 1.25rem; font-weight: 700; color: var(--primary-color) !important; }
+.logo-icon { font-size: 1.5rem; margin-right: 0.5rem; }
+.brand-text {
+    background: linear-gradient(135deg, #16a34a 0%, #0ea5e9 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.navbar-nav .nav-link {
+    color: var(--gray-600) !important;
+    font-weight: 500;
+    padding: 0.5rem 1rem !important;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+.navbar-nav .nav-link:hover { color: var(--primary-color) !important; background: var(--gray-50); }
+.search-form { min-width: 280px; }
+
+/* HERO */
+.hero-section {
+    background: linear-gradient(135deg, #16a34a 0%, #0d9488 50%, #0ea5e9 100%);
+    position: relative;
+    overflow: hidden;
+    padding: 3rem 0;
+}
+.hero-section::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+        radial-gradient(circle at 20% 50%, rgba(255,255,255,0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.06) 0%, transparent 50%);
+    pointer-events: none;
+}
+.min-vh-75 { min-height: 60vh; }
+.hero-title {
+    font-weight: 800;
+    line-height: 1.1;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    text-shadow: 0 2px 20px rgba(0,0,0,0.1);
+}
+.hero-subtitle { font-size: 1.125rem; opacity: 0.95; }
+.hero-search-card {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    margin-top: 2rem;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+}
+.hero-search-card .form-control,
+.hero-search-card .form-select {
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: none;
+}
+.hero-illustration { position: relative; height: 400px; }
+.hero-emoji {
+    font-size: 12rem;
+    text-align: center;
+    line-height: 400px;
+    filter: drop-shadow(0 10px 30px rgba(0,0,0,0.2));
+    animation: float 3s ease-in-out infinite;
+}
+@keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-15px);} }
+
+.floating-card-1, .floating-card-2, .floating-card-3 {
+    position: absolute;
+    background: white;
+    padding: 1rem 1.25rem;
+    border-radius: 1rem;
+    box-shadow: var(--shadow-xl);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    animation: bounce 4s ease-in-out infinite;
+    z-index: 2;
+}
+.floating-card-1 { top: 10%; left: 0; animation-delay: 0s; }
+.floating-card-2 { top: 50%; right: 0; animation-delay: 1s; }
+.floating-card-3 { bottom: 10%; left: 15%; animation-delay: 2s; }
+.floating-card-1 i, .floating-card-2 i, .floating-card-3 i { font-size: 1.5rem; }
+.floating-card-1 strong, .floating-card-2 strong, .floating-card-3 strong {
+    display: block; font-size: 1.25rem; color: var(--gray-900); line-height: 1;
+}
+.floating-card-1 span, .floating-card-2 span, .floating-card-3 span {
+    font-size: 0.75rem; color: var(--gray-600);
+}
+@keyframes bounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+
+/* CARDS */
+.stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: var(--shadow-md);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+
+.region-card {
+    background: white;
+    border: 2px solid transparent;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    text-align: center;
+    transition: all 0.3s;
+    color: var(--gray-900);
+    height: 100%;
+}
+.region-card:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+.region-icon {
+    width: 60px; height: 60px;
+    margin: 0 auto 1rem;
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: var(--primary-color);
+    border-radius: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+}
+
+.pharmacy-card {
+    background: white;
+    padding: 1.25rem;
+    border-radius: 1rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s;
+    height: 100%;
+}
+.pharmacy-card:hover { box-shadow: var(--shadow-md); border-color: var(--primary-color); }
+
+.medicine-card {
+    background: white;
+    padding: 1.25rem;
+    border-radius: 1rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s;
+    color: var(--gray-900);
+    height: 100%;
+    text-align: center;
+}
+.medicine-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+.medicine-icon {
+    width: 60px; height: 60px;
+    margin: 0 auto 0.75rem;
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    color: var(--secondary-color);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+}
+.medicine-icon-large {
+    width: 200px; height: 200px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    color: var(--secondary-color);
+    border-radius: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 5rem;
+}
+
+.feature-icon {
+    width: 80px; height: 80px;
+    margin: 0 auto 1.5rem;
+    border-radius: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+}
+
+/* RESULT CARDS */
+.result-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid #e5e7eb;
+    margin-bottom: 1rem;
+    position: relative;
+    transition: all 0.2s;
+}
+.result-card:hover { box-shadow: var(--shadow-md); }
+.result-card.cheapest {
+    border-color: var(--accent-color);
+    border-width: 2px;
+    background: linear-gradient(to right, #fffbeb 0%, white 30%);
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
+}
+.cheapest-badge {
+    position: absolute; top: -12px; left: 1.5rem;
+    background: var(--accent-color); color: white;
+    padding: 0.25rem 0.875rem;
+    border-radius: 999px;
+    font-size: 0.75rem; font-weight: 700;
+    box-shadow: var(--shadow-md);
+    z-index: 2;
+}
+.price-block { text-align: right; }
+.price-value {
+    font-size: 1.75rem; font-weight: 800;
+    color: var(--primary-color);
+    line-height: 1;
+}
+.price-value small { font-size: 0.875rem; font-weight: 500; color: var(--gray-600); }
+.price-large { font-size: 2.25rem; font-weight: 800; }
+
+/* FILTER */
+.filter-card {
+    background: white;
+    padding: 1.25rem;
+    border-radius: 1rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid #e5e7eb;
+}
+
+/* MAP */
+.map-container { border-radius: 1rem; overflow: hidden; }
+.marker-pin {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    color: white;
+    width: 30px; height: 30px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    border: 2px solid white;
+}
+.marker-pin i { transform: rotate(45deg); font-size: 0.875rem; }
+.map-popup { min-width: 200px; }
+
+/* DETAIL */
+.pharmacy-detail-card,
+.medicine-detail-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid #e5e7eb;
+}
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: 0.75rem;
+}
+.info-item i { font-size: 1.25rem; margin-top: 0.25rem; }
+
+.price-summary-card {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: var(--shadow-md);
+}
+
+.similar-medicine-card,
+.nearby-card {
+    display: block;
+    background: white;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    margin-bottom: 0.5rem;
+    text-decoration: none;
+    color: var(--gray-900);
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s;
+}
+.similar-medicine-card:hover,
+.nearby-card:hover {
+    border-color: var(--primary-color);
+    background: var(--gray-50);
+}
+
+.auth-card {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 1.25rem;
+    box-shadow: var(--shadow-xl);
+    border: 1px solid #e5e7eb;
+}
+
+.contact-icon {
+    width: 50px; height: 50px;
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: var(--primary-color);
+    border-radius: 0.75rem;
+    display: flex; align-items: center; justify-content: center;
+    margin-right: 1rem;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.breadcrumb { background: transparent; padding: 0; margin-bottom: 1.5rem; }
+.breadcrumb-item a { color: var(--primary-color); text-decoration: none; }
+
+.btn-success {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.btn-success:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+.btn-outline-success {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.btn-outline-success:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.search-header {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+}
+
+.footer a:hover { color: white !important; text-decoration: underline !important; }
+
+/* RESPONSIVE */
+@media (max-width: 991.98px) {
+    .search-form { margin: 1rem 0; min-width: 100%; }
+    .floating-card-1, .floating-card-2, .floating-card-3 { display: none; }
+}
+@media (max-width: 767.98px) {
+    .hero-title { font-size: 2rem; }
+    .hero-search-card { padding: 1rem; }
+    .price-block { text-align: center; margin-top: 1rem; }
+}

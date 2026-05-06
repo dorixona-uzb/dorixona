@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ medicine.name }} {{ medicine.dosage }} — Narxi va dorixonalar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'pharmacies:home' %}">Bosh sahifa</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'medicines:list' %}">Dorilar</a></li>
+            {% if medicine.category %}
+                <li class="breadcrumb-item"><a href="#">{{ medicine.category.name }}</a></li>
+            {% endif %}
+            <li class="breadcrumb-item active">{{ medicine.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="medicine-detail-card">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        {% if medicine.image %}
+                            <img src="{{ medicine.image.url }}" alt="{{ medicine.name }}" class="img-fluid rounded">
+                        {% else %}
+                            <div class="medicine-icon-large">
+                                <i class="fas fa-pills"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-8">
+                        <h1 class="fw-bold mb-2">{{ medicine.name }}</h1>
+                        {% if medicine.generic_name %}
+                            <p class="text-muted mb-2"><strong>INN:</strong> {{ medicine.generic_name }}</p>
+                        {% endif %}
+
+                        <table class="table table-sm">
+                            {% if medicine.dosage %}
+                                <tr><td class="text-muted">Dozasi:</td><td><strong>{{ medicine.dosage }}</strong></td></tr>
+                            {% endif %}
+                            <tr><td class="text-muted">Shakli:</td><td><strong>{{ medicine.get_dosage_form_display }}</strong></td></tr>
+                            {% if medicine.category %}
+                                <tr><td class="text-muted">Turkum:</td><td><strong>{{ medicine.category.name }}</strong></td></tr>
+                            {% endif %}
+                            {% if medicine.manufacturer %}
+                                <tr><td class="text-muted">Ishlab chiqaruvchi:</td><td><strong>{{ medicine.manufacturer }}</strong></td></tr>
+                            {% endif %}
+                            {% if medicine.country %}
+                                <tr><td class="text-muted">Mamlakat:</td><td><strong>{{ medicine.country }}</strong></td></tr>
+                            {% endif %}
+                            <tr>
+                                <td class="text-muted">Retsept:</td>
+                                <td>
+                                    {% if medicine.prescription_required %}
+                                        <span class="badge bg-warning text-dark">Retsept bilan</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Retseptsiz</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                {% if medicine.description %}
+                    <hr>
+                    <h5 class="fw-bold">Tavsif</h5>
+                    <p>{{ medicine.description|linebreaks }}</p>
+                {% endif %}
+
+                {% if medicine.indications %}
+                    <h5 class="fw-bold">Foydalanish ko'rsatmalari</h5>
+                    <p class="text-muted">{{ medicine.indications|linebreaks }}</p>
+                {% endif %}
+
+                {% if medicine.contraindications %}
+                    <div class="alert alert-warning">
+                        <h6 class="fw-bold mb-2"><i class="fas fa-exclamation-triangle"></i> Qarshi ko'rsatmalar</h6>
+                        {{ medicine.contraindications|linebreaks }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Mavjud dorixonalar -->
+            <div class="mt-4">
+                <h3 class="fw-bold mb-3">
+                    <i class="fas fa-clinic-medical text-success"></i>
+                    Mavjud dorixonalar ({{ stock_items.count }})
+                </h3>
+
+                {% if stock_items %}
+                    {% for stock in stock_items %}
+                        <div class="result-card {% if forloop.first %}cheapest{% endif %}">
+                            {% if forloop.first %}
+                                <span class="cheapest-badge"><i class="fas fa-medal"></i> ENG ARZON</span>
+                            {% endif %}
+                            <div class="row align-items-center">
+                                <div class="col-md-7">
+                                    <h5 class="fw-bold mb-1">
+                                        <a href="{{ stock.pharmacy.get_absolute_url }}" class="text-decoration-none text-dark">
+                                            {{ stock.pharmacy.name }}
+                                        </a>
+                                        {% if stock.pharmacy.is_verified %}
+                                            <i class="fas fa-check-circle text-success small"></i>
+                                        {% endif %}
+                                    </h5>
+                                    <p class="small text-muted mb-1">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        {{ stock.pharmacy.region.name }}, {{ stock.pharmacy.address }}
+                                    </p>
+                                    <p class="small mb-2">
+                                        <i class="fas fa-phone text-success"></i>
+                                        <a href="tel:{{ stock.pharmacy.phone }}">{{ stock.pharmacy.phone }}</a>
+                                        {% if stock.pharmacy.is_24_hours %}
+                                            <span class="badge bg-warning text-dark ms-2"><i class="fas fa-clock"></i> 24/7</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <div class="col-md-5 text-md-end">
+                                    <div class="price-block mb-2">
+                                        <div class="price-value">{{ stock.price|floatformat:0|intcomma }} <small>so'm</small></div>
+                                        <div class="stock-info text-success small">
+                                            <i class="fas fa-check-circle"></i> {{ stock.quantity }} dona mavjud
+                                        </div>
+                                    </div>
+                                    <a href="{{ stock.pharmacy.google_maps_url }}" target="_blank" class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-route"></i> Yo'l
+                                    </a>
+                                    <a href="tel:{{ stock.pharmacy.phone }}" class="btn btn-sm btn-success">
+                                        <i class="fas fa-phone"></i> Qo'ng'iroq
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle"></i> Bu dori hozirda hech qaysi dorixonada mavjud emas.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            {% if cheapest_stock %}
+                <div class="price-summary-card">
+                    <h6 class="fw-bold mb-2">Eng arzon narx</h6>
+                    <div class="price-large text-success">
+                        {{ min_price|floatformat:0|intcomma }} so'm
+                    </div>
+                    <p class="small text-muted mb-2">
+                        {{ cheapest_stock.pharmacy.name }} dorixonasida<br>
+                        ({{ cheapest_stock.pharmacy.region.name }})
+                    </p>
+                    <a href="{{ cheapest_stock.pharmacy.get_absolute_url }}" class="btn btn-success w-100">
+                        Dorixonaga o'tish
+                    </a>
+                </div>
+            {% endif %}
+
+            {% if similar_medicines %}
+                <div class="mt-4">
+                    <h6 class="fw-bold mb-3">O'xshash dorilar</h6>
+                    {% for med in similar_medicines %}
+                        <a href="{{ med.get_absolute_url }}" class="similar-medicine-card">
+                            <strong>{{ med.name }}</strong>
+                            <small class="d-block text-muted">{{ med.dosage|default:"" }} • {{ med.get_dosage_form_display }}</small>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

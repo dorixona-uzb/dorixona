@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ pharmacy.name }} — {{ pharmacy.region.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'pharmacies:home' %}">Bosh sahifa</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'pharmacies:list' %}">Dorixonalar</a></li>
+            <li class="breadcrumb-item"><a href="{{ pharmacy.region.get_absolute_url }}">{{ pharmacy.region.name }}</a></li>
+            <li class="breadcrumb-item active">{{ pharmacy.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="pharmacy-detail-card">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h1 class="fw-bold mb-0">
+                        {{ pharmacy.name }}
+                        {% if pharmacy.is_verified %}
+                            <span class="badge bg-success fs-6 align-middle"><i class="fas fa-check"></i> Tasdiqlangan</span>
+                        {% endif %}
+                    </h1>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <i class="fas fa-map-marker-alt text-success"></i>
+                        <div>
+                            <small class="text-muted d-block">Manzil</small>
+                            <strong>{{ pharmacy.region.name }}, {{ pharmacy.address }}</strong>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-phone text-success"></i>
+                        <div>
+                            <small class="text-muted d-block">Telefon</small>
+                            <strong><a href="tel:{{ pharmacy.phone }}">{{ pharmacy.phone }}</a></strong>
+                            {% if pharmacy.phone_secondary %}
+                                <br><a href="tel:{{ pharmacy.phone_secondary }}">{{ pharmacy.phone_secondary }}</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-clock text-success"></i>
+                        <div>
+                            <small class="text-muted d-block">Ish vaqti</small>
+                            {% if pharmacy.is_24_hours %}
+                                <strong class="text-warning">24/7 — Tunu kun ishlaydi</strong>
+                            {% else %}
+                                <strong>{{ pharmacy.working_hours }}</strong>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if pharmacy.has_delivery %}
+                        <div class="info-item">
+                            <i class="fas fa-truck text-success"></i>
+                            <div>
+                                <small class="text-muted d-block">Xizmat</small>
+                                <strong>Yetkazib berish bor</strong>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                {% if pharmacy.description %}
+                    <hr>
+                    <h5 class="fw-bold">Dorixona haqida</h5>
+                    <p class="text-muted">{{ pharmacy.description }}</p>
+                {% endif %}
+
+                <div class="d-flex gap-2 mt-3 flex-wrap">
+                    <a href="{{ pharmacy.google_maps_url }}" target="_blank" class="btn btn-success">
+                        <i class="fas fa-map-marked-alt"></i> Google Mapsda ochish
+                    </a>
+                    <a href="{{ pharmacy.yandex_maps_url }}" target="_blank" class="btn btn-outline-success">
+                        <i class="fas fa-map"></i> Yandex Mapsda ochish
+                    </a>
+                    <a href="tel:{{ pharmacy.phone }}" class="btn btn-warning">
+                        <i class="fas fa-phone"></i> Qo'ng'iroq qilish
+                    </a>
+                </div>
+            </div>
+
+            <!-- Mavjud dorilar -->
+            <div class="mt-4">
+                <h3 class="fw-bold mb-3">
+                    <i class="fas fa-pills text-success"></i>
+                    Mavjud dorilar ({{ stock_items.count }})
+                </h3>
+
+                {% if stock_items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover medicine-table">
+                            <thead class="table-success">
+                                <tr>
+                                    <th>Dori nomi</th>
+                                    <th>Dozasi</th>
+                                    <th>Narxi</th>
+                                    <th>Mavjud</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stock in stock_items %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ stock.medicine.name }}</strong>
+                                            {% if stock.medicine.generic_name %}
+                                                <br><small class="text-muted">{{ stock.medicine.generic_name }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ stock.medicine.dosage|default:"—" }}</td>
+                                        <td><strong class="text-success">{{ stock.price|floatformat:0|intcomma }} so'm</strong></td>
+                                        <td>
+                                            <span class="badge bg-success-subtle text-success-emphasis">
+                                                {{ stock.quantity }} dona
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{{ stock.medicine.get_absolute_url }}" class="btn btn-sm btn-outline-success">
+                                                Batafsil
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Bu dorixonada hozircha dorilar ro'yxati kiritilmagan.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Xarita -->
+            <div class="map-sidebar mb-4">
+                <h5 class="fw-bold mb-2">Xaritada joylashuvi</h5>
+                <div id="pharmacy-map" style="height: 300px; border-radius: 12px;"></div>
+            </div>
+
+            <!-- Yaqin atrofdagilar -->
+            {% if nearby_pharmacies %}
+                <div class="nearby-pharmacies">
+                    <h5 class="fw-bold mb-3">{{ pharmacy.region.name }}dagi boshqa dorixonalar</h5>
+                    {% for nearby in nearby_pharmacies %}
+                        <div class="nearby-card">
+                            <h6 class="fw-bold mb-1">
+                                <a href="{{ nearby.get_absolute_url }}" class="text-decoration-none text-dark">
+                                    {{ nearby.name }}
+                                </a>
+                            </h6>
+                            <p class="small text-muted mb-1">{{ nearby.address|truncatechars:40 }}</p>
+                            <p class="small mb-0">
+                                <i class="fas fa-phone text-success"></i> {{ nearby.phone }}
+                                {% if nearby.is_24_hours %}
+                                    <span class="badge bg-warning text-dark ms-1">24/7</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const map = L.map('pharmacy-map').setView([{{ pharmacy.latitude }}, {{ pharmacy.longitude }}], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(map);
+
+    const greenIcon = L.divIcon({
+        className: 'custom-marker',
+        html: '<div class="marker-pin"><i class="fas fa-clinic-medical"></i></div>',
+        iconSize: [30, 42],
+        iconAnchor: [15, 42],
+    });
+
+    L.marker([{{ pharmacy.latitude }}, {{ pharmacy.longitude }}], { icon: greenIcon })
+        .addTo(map)
+        .bindPopup('<strong>{{ pharmacy.name }}</strong><br>{{ pharmacy.address }}')
+        .openPopup();
+</script>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ category.name }} — Dorilar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="fw-bold mb-4">
+        {% if category.icon %}<i class="fas {{ category.icon }} text-success"></i>{% endif %}
+        {{ category.name }}
+    </h1>
+    {% if category.description %}<p class="text-muted">{{ category.description }}</p>{% endif %}
+
+    <div class="row g-3">
+        {% for medicine in medicines %}
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <a href="{{ medicine.get_absolute_url }}" class="text-decoration-none">
+                    <div class="medicine-card">
+                        <div class="medicine-icon"><i class="fas fa-pills"></i></div>
+                        <h6 class="fw-bold mb-1">{{ medicine.name }}</h6>
+                        {% if medicine.dosage %}<p class="small text-muted mb-0">{{ medicine.dosage }}</p>{% endif %}
+                    </div>
+                </a>
+            </div>
+        {% empty %}
+            <div class="col-12"><div class="alert alert-info">Bu turkumda dorilar yo'q.</div></div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Barcha dorixonalar — Surxondaryo Dorixona{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="fw-bold mb-4"><i class="fas fa-clinic-medical text-success"></i> Dorixonalar</h1>
+
+    <div class="row">
+        <aside class="col-lg-3 mb-4">
+            <div class="filter-card sticky-top" style="top: 80px;">
+                <form method="get">
+                    <h6 class="fw-bold mb-3">Tuman bo'yicha</h6>
+                    <select name="region" class="form-select mb-3">
+                        <option value="">Barcha tumanlar</option>
+                        {% for region in regions %}
+                            <option value="{{ region.slug }}" {% if region.slug == selected_region %}selected{% endif %}>{{ region.name }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" name="only_24h" value="1" id="o24" {% if request.GET.only_24h %}checked{% endif %}>
+                        <label class="form-check-label small" for="o24">Faqat 24/7</label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="only_delivery" value="1" id="od" {% if request.GET.only_delivery %}checked{% endif %}>
+                        <label class="form-check-label small" for="od">Yetkazib berish</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100">Qo'llash</button>
+                </form>
+            </div>
+        </aside>
+
+        <div class="col-lg-9">
+            <p class="text-muted">Jami: <strong>{{ pharmacies|length }}</strong> ta dorixona topildi</p>
+            <div class="row g-3">
+                {% for pharmacy in pharmacies %}
+                    <div class="col-md-6">
+                        <div class="pharmacy-card">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="fw-bold mb-0">
+                                    <a href="{{ pharmacy.get_absolute_url }}" class="text-decoration-none text-dark">
+                                        {{ pharmacy.name }}
+                                    </a>
+                                </h5>
+                                {% if pharmacy.is_verified %}
+                                    <span class="badge bg-success"><i class="fas fa-check"></i></span>
+                                {% endif %}
+                            </div>
+                            <p class="text-muted small mb-2">
+                                <i class="fas fa-map-marker-alt"></i> {{ pharmacy.region.name }}, {{ pharmacy.address|truncatechars:50 }}
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-phone text-success"></i> {{ pharmacy.phone }}
+                            </p>
+                            <div class="d-flex gap-2 flex-wrap">
+                                {% if pharmacy.is_24_hours %}
+                                    <span class="badge bg-warning text-dark">24/7</span>
+                                {% endif %}
+                                {% if pharmacy.has_delivery %}
+                                    <span class="badge bg-info">Yetkazish</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12">
+                        <div class="alert alert-info">Filtrlarga mos dorixona topilmadi.</div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if page_obj.has_other_pages %}
+                <nav class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Oldingi</a></li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+                        {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Keyingi</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

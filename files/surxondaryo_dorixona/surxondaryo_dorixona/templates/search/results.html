@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Qidiruv natijalari: {{ query }} — Surxondaryo Dorixona{% endblock %}
+
+{% block content %}
+
+<!-- Qidiruv panel -->
+<section class="search-header bg-success text-white py-4">
+    <div class="container">
+        <form action="{% url 'search:results' %}" method="get" class="row g-2">
+            <div class="col-lg-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-0"><i class="fas fa-search text-success"></i></span>
+                    <input type="search" name="q" value="{{ query }}" class="form-control border-0" placeholder="Dori nomini kiriting..." required>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <select name="region" class="form-select border-0">
+                    <option value="">Barcha tumanlar</option>
+                    {% for region in regions %}
+                        <option value="{{ region.slug }}" {% if region.slug == selected_region %}selected{% endif %}>{{ region.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-lg-2">
+                <select name="sort" class="form-select border-0">
+                    <option value="price" {% if sort_by == 'price' %}selected{% endif %}>Arzon narx</option>
+                    <option value="distance" {% if sort_by == 'distance' %}selected{% endif %}>Yaqinlik</option>
+                </select>
+            </div>
+            <div class="col-lg-2">
+                <button type="submit" class="btn btn-warning w-100"><i class="fas fa-search"></i> Qidirish</button>
+            </div>
+            <input type="hidden" name="lat" id="user-lat" value="{{ user_lat|default:'' }}">
+            <input type="hidden" name="lng" id="user-lng" value="{{ user_lng|default:'' }}">
+        </form>
+    </div>
+</section>
+
+<div class="container py-4">
+    <div class="row">
+        <!-- Filtrlar -->
+        <aside class="col-lg-3 mb-4">
+            <div class="filter-card sticky-top" style="top: 80px;">
+                <h6 class="fw-bold mb-3"><i class="fas fa-filter"></i> Filtrlar</h6>
+                <form action="{% url 'search:results' %}" method="get">
+                    <input type="hidden" name="q" value="{{ query }}">
+                    <input type="hidden" name="region" value="{{ selected_region }}">
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Maksimal narx (so'm)</label>
+                        <input type="number" name="max_price" value="{{ max_price }}" class="form-control" placeholder="Masalan: 50000">
+                    </div>
+
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" name="only_24h" value="1" id="only_24h" {% if only_24h %}checked{% endif %}>
+                        <label class="form-check-label small" for="only_24h">Faqat 24/7 ishlovchilar</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" name="only_delivery" value="1" id="only_delivery" {% if only_delivery %}checked{% endif %}>
+                        <label class="form-check-label small" for="only_delivery">Yetkazib berish bilan</label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="no_rx" value="1" id="no_rx" {% if only_no_prescription %}checked{% endif %}>
+                        <label class="form-check-label small" for="no_rx">Retseptsiz dorilar</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100">Qo'llash</button>
+                    <a href="{% url 'search:results' %}?q={{ query }}" class="btn btn-light w-100 mt-2">Tozalash</a>
+                </form>
+
+                <hr>
+                <button id="locate-btn" class="btn btn-outline-success w-100">
+                    <i class="fas fa-location-arrow"></i> Lokatsiyamni aniqlash
+                </button>
+                <p class="small text-muted mt-2 mb-0" id="location-status"></p>
+            </div>
+        </aside>
+
+        <!-- Natijalar -->
+        <div class="col-lg-9">
+            {% if not query %}
+                <div class="text-center py-5">
+                    <i class="fas fa-search fa-4x text-muted mb-3"></i>
+                    <h4>Dori nomini kiriting</h4>
+                    <p class="text-muted">Qidiruv satriga dori nomini kiriting va eng arzon narxlarni toping</p>
+                </div>
+            {% elif total_results == 0 %}
+                <div class="text-center py-5">
+                    <i class="fas fa-frown fa-4x text-muted mb-3"></i>
+                    <h4>"{{ query }}" bo'yicha hech narsa topilmadi</h4>
+                    <p class="text-muted">Boshqa nom yoki filtrlar bilan qayta urinib ko'ring</p>
+                    <a href="{% url 'medicines:list' %}" class="btn btn-success">Barcha dorilarga o'tish</a>
+                </div>
+            {% else %}
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">
+                        "{{ query }}" — <span class="text-success">{{ total_results }} ta natija</span>
+                    </h5>
+                    {% if user_lat and user_lng %}
+                        <span class="badge bg-info"><i class="fas fa-location-arrow"></i> Lokatsiya aniqlangan</span>
+                    {% endif %}
+                </div>
+
+                {% if matched_medicines %}
+                    <div class="alert alert-light border mb-3">
+                        <small class="text-muted">Topilgan dorilar:</small><br>
+                        {% for med in matched_medicines %}
+                            <a href="{{ med.get_absolute_url }}" class="badge bg-success-subtle text-success-emphasis text-decoration-none me-1">
+                                {{ med.name }} {{ med.dosage }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Natijalar ro'yxati -->
+                {% for stock in stock_results %}
+                    <div class="result-card {% if stock.is_cheapest %}cheapest{% endif %}">
+                        {% if stock.is_cheapest %}
+                            <span class="cheapest-badge">
+                                <i class="fas fa-medal"></i> ENG ARZON
+                            </span>
+                        {% endif %}
+                        <div class="row align-items-center">
+                            <div class="col-md-7">
+                                <h5 class="fw-bold mb-1">
+                                    <a href="{{ stock.medicine.get_absolute_url }}" class="text-decoration-none">
+                                        {{ stock.medicine.name }}
+                                        {% if stock.medicine.dosage %}<small class="text-muted">{{ stock.medicine.dosage }}</small>{% endif %}
+                                    </a>
+                                </h5>
+                                {% if stock.medicine.generic_name %}
+                                    <p class="small text-muted mb-1">INN: {{ stock.medicine.generic_name }}</p>
+                                {% endif %}
+
+                                <div class="pharmacy-info mt-2">
+                                    <p class="mb-1">
+                                        <i class="fas fa-clinic-medical text-success"></i>
+                                        <strong>
+                                            <a href="{{ stock.pharmacy.get_absolute_url }}" class="text-decoration-none text-dark">
+                                                {{ stock.pharmacy.name }}
+                                            </a>
+                                        </strong>
+                                        {% if stock.pharmacy.is_verified %}
+                                            <i class="fas fa-check-circle text-success" title="Tasdiqlangan"></i>
+                                        {% endif %}
+                                    </p>
+                                    <p class="small text-muted mb-1">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        {{ stock.pharmacy.region.name }}, {{ stock.pharmacy.address }}
+                                        {% if stock.distance %}
+                                            <span class="badge bg-info ms-1">{{ stock.distance }} km</span>
+                                        {% endif %}
+                                    </p>
+                                    <p class="small mb-2">
+                                        <i class="fas fa-phone text-success"></i>
+                                        <a href="tel:{{ stock.pharmacy.phone }}" class="text-decoration-none">{{ stock.pharmacy.phone }}</a>
+                                        {% if stock.pharmacy.is_24_hours %}
+                                            <span class="badge bg-warning text-dark ms-2"><i class="fas fa-clock"></i> 24/7</span>
+                                        {% endif %}
+                                        {% if stock.pharmacy.has_delivery %}
+                                            <span class="badge bg-info ms-1"><i class="fas fa-truck"></i> Yetkazib berish</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-5 text-md-end">
+                                <div class="price-block mb-2">
+                                    <div class="price-value">{{ stock.price|floatformat:0|intcomma }} <small>so'm</small></div>
+                                    {% if stock.quantity > 0 %}
+                                        <div class="stock-info text-success small">
+                                            <i class="fas fa-check-circle"></i> Mavjud: {{ stock.quantity }} dona
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="d-grid gap-2 d-md-block">
+                                    <a href="{{ stock.pharmacy.google_maps_url }}" target="_blank" class="btn btn-outline-success btn-sm">
+                                        <i class="fas fa-route"></i> Yo'l ko'rsatish
+                                    </a>
+                                    <a href="tel:{{ stock.pharmacy.phone }}" class="btn btn-success btn-sm">
+                                        <i class="fas fa-phone"></i> Qo'ng'iroq
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <!-- Paginatsiya -->
+                {% if page_obj.has_other_pages %}
+                    <nav class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">Oldingi</a>
+                                </li>
+                            {% endif %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                            </li>
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">Keyingi</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('locate-btn').addEventListener('click', function() {
+        const status = document.getElementById('location-status');
+        if (!navigator.geolocation) {
+            status.textContent = '⚠️ Brauzer geolokatsiyani qo\'llab-quvvatlamaydi';
+            return;
+        }
+        status.textContent = '📍 Aniqlanmoqda...';
+        navigator.geolocation.getCurrentPosition(function(pos) {
+            const url = new URL(window.location);
+            url.searchParams.set('lat', pos.coords.latitude);
+            url.searchParams.set('lng', pos.coords.longitude);
+            url.searchParams.set('sort', 'distance');
+            window.location = url;
+        }, function() {
+            status.textContent = '❌ Lokatsiyani aniqlay olmadik';
+        });
+    });
+</script>
+{% endblock %}

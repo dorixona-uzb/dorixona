@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Aloqa{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-6">
+            <h1 class="fw-bold mb-4">Biz bilan aloqa</h1>
+            <p class="text-muted">Savollar yoki takliflar bormi? Biz bilan bog'laning!</p>
+
+            <div class="contact-info mt-4">
+                <div class="d-flex mb-3">
+                    <div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <div>
+                        <strong>Manzil</strong>
+                        <p class="text-muted mb-0">Termiz shahri, Surxondaryo viloyati</p>
+                    </div>
+                </div>
+                <div class="d-flex mb-3">
+                    <div class="contact-icon"><i class="fas fa-phone"></i></div>
+                    <div>
+                        <strong>Telefon</strong>
+                        <p class="text-muted mb-0">+998 76 XXX-XX-XX</p>
+                    </div>
+                </div>
+                <div class="d-flex mb-3">
+                    <div class="contact-icon"><i class="fas fa-envelope"></i></div>
+                    <div>
+                        <strong>Email</strong>
+                        <p class="text-muted mb-0">info@surxondaryo-dorixona.uz</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="auth-card">
+                <h4 class="fw-bold mb-3">Xabar yuborish</h4>
+                <form>
+                    <div class="mb-3">
+                        <input type="text" class="form-control" placeholder="Ism">
+                    </div>
+                    <div class="mb-3">
+                        <input type="email" class="form-control" placeholder="Email">
+                    </div>
+                    <div class="mb-3">
+                        <textarea class="form-control" rows="5" placeholder="Xabar"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Yuborish</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
